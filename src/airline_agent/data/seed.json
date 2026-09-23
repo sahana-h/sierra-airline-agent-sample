@@ -1,0 +1,171 @@
+{
+  "users": [
+    {
+      "user_id": "ava_chen_1042",
+      "first_name": "Ava",
+      "last_name": "Chen",
+      "email": "ava.chen@example.com",
+      "membership": "gold",
+      "payment_methods": [
+        {"id": "card_ava_visa", "kind": "credit_card", "description": "Visa ending 4242"},
+        {"id": "gift_ava_01", "kind": "gift_card", "description": "Gift card", "balance": 150}
+      ]
+    },
+    {
+      "user_id": "marcus_reed_2210",
+      "first_name": "Marcus",
+      "last_name": "Reed",
+      "email": "marcus.reed@example.com",
+      "membership": "regular",
+      "payment_methods": [
+        {"id": "card_marcus_mc", "kind": "credit_card", "description": "Mastercard ending 5100"}
+      ]
+    },
+    {
+      "user_id": "priya_nair_3318",
+      "first_name": "Priya",
+      "last_name": "Nair",
+      "email": "priya.nair@example.com",
+      "membership": "silver",
+      "payment_methods": [
+        {"id": "card_priya_amex", "kind": "credit_card", "description": "Amex ending 1005"},
+        {"id": "cert_priya_01", "kind": "travel_certificate", "description": "Travel certificate", "balance": 0}
+      ]
+    }
+  ],
+  "reservations": [
+    {
+      "reservation_id": "ZQ4K2P",
+      "user_id": "ava_chen_1042",
+      "origin": "SFO",
+      "destination": "JFK",
+      "cabin": "business",
+      "flights": [
+        {"flight_number": "FA101", "date": "2026-10-05", "price": 1200},
+        {"flight_number": "FA102", "date": "2026-10-12", "price": 1150}
+      ],
+      "passengers": [
+        {"first_name": "Ava", "last_name": "Chen", "date_of_birth": "1988-04-17"}
+      ],
+      "checked_bags": 2,
+      "travel_insurance": true,
+      "status": "active",
+      "created_at": "2026-09-01T18:22:00Z",
+      "payments": [{"payment_method_id": "card_ava_visa", "amount": 2380}]
+    },
+    {
+      "reservation_id": "M8TRW3",
+      "user_id": "marcus_reed_2210",
+      "origin": "SFO",
+      "destination": "SEA",
+      "cabin": "basic_economy",
+      "flights": [
+        {"flight_number": "FA210", "date": "2026-10-08", "price": 89}
+      ],
+      "passengers": [
+        {"first_name": "Marcus", "last_name": "Reed", "date_of_birth": "1979-11-02"}
+      ],
+      "checked_bags": 0,
+      "travel_insurance": false,
+      "status": "active",
+      "created_at": "2026-09-25T02:00:00Z",
+      "payments": [{"payment_method_id": "card_marcus_mc", "amount": 89}]
+    },
+    {
+      "reservation_id": "B2LN6Y",
+      "user_id": "marcus_reed_2210",
+      "origin": "LAX",
+      "destination": "ORD",
+      "cabin": "economy",
+      "flights": [
+        {"flight_number": "FA305", "date": "2026-09-20", "price": 240}
+      ],
+      "passengers": [
+        {"first_name": "Marcus", "last_name": "Reed", "date_of_birth": "1979-11-02"}
+      ],
+      "checked_bags": 1,
+      "travel_insurance": false,
+      "status": "active",
+      "created_at": "2026-08-30T09:10:00Z",
+      "payments": [{"payment_method_id": "card_marcus_mc", "amount": 240}]
+    },
+    {
+      "reservation_id": "P5XJ9D",
+      "user_id": "priya_nair_3318",
+      "origin": "ORD",
+      "destination": "BOS",
+      "cabin": "economy",
+      "flights": [
+        {"flight_number": "FA410", "date": "2026-10-20", "price": 180}
+      ],
+      "passengers": [
+        {"first_name": "Priya", "last_name": "Nair", "date_of_birth": "1992-06-30"},
+        {"first_name": "Rohan", "last_name": "Nair", "date_of_birth": "1990-01-14"}
+      ],
+      "checked_bags": 1,
+      "travel_insurance": false,
+      "status": "active",
+      "created_at": "2026-09-10T15:45:00Z",
+      "payments": [
+        {"payment_method_id": "card_priya_amex", "amount": 300},
+        {"payment_method_id": "cert_priya_01", "amount": 60}
+      ]
+    },
+    {
+      "reservation_id": "C3VH7A",
+      "user_id": "priya_nair_3318",
+      "origin": "SEA",
+      "destination": "SFO",
+      "cabin": "economy",
+      "flights": [
+        {"flight_number": "FA211", "date": "2026-10-10", "price": 150}
+      ],
+      "passengers": [
+        {"first_name": "Priya", "last_name": "Nair", "date_of_birth": "1992-06-30"}
+      ],
+      "checked_bags": 0,
+      "travel_insurance": true,
+      "status": "cancelled",
+      "created_at": "2026-09-05T20:30:00Z",
+      "payments": [{"payment_method_id": "card_priya_amex", "amount": 180}]
+    }
+  ],
+  "flights": [
+    {
+      "flight_number": "FA101", "date": "2026-10-05", "origin": "SFO", "destination": "JFK",
+      "departure": "2026-10-05T15:00:00Z", "arrival": "2026-10-05T23:25:00Z", "status": "scheduled",
+      "prices": {"basic_economy": 219, "economy": 329, "business": 1200},
+      "seats_available": {"basic_economy": 12, "economy": 40, "business": 6}
+    },
+    {
+      "flight_number": "FA102", "date": "2026-10-12", "origin": "JFK", "destination": "SFO",
+      "departure": "2026-10-12T13:00:00Z", "arrival": "2026-10-12T19:40:00Z", "status": "scheduled",
+      "prices": {"basic_economy": 209, "economy": 319, "business": 1150},
+      "seats_available": {"basic_economy": 20, "economy": 35, "business": 4}
+    },
+    {
+      "flight_number": "FA210", "date": "2026-10-08", "origin": "SFO", "destination": "SEA",
+      "departure": "2026-10-08T17:30:00Z", "arrival": "2026-10-08T19:40:00Z", "status": "scheduled",
+      "prices": {"basic_economy": 89, "economy": 149, "business": 480},
+      "seats_available": {"basic_economy": 5, "economy": 22, "business": 8}
+    },
+    {
+      "flight_number": "FA211", "date": "2026-10-10", "origin": "SEA", "destination": "SFO",
+      "departure": "2026-10-10T01:15:00Z", "arrival": "2026-10-10T03:25:00Z", "status": "scheduled",
+      "prices": {"basic_economy": 99, "economy": 150, "business": 460},
+      "seats_available": {"basic_economy": 9, "economy": 30, "business": 6}
+    },
+    {
+      "flight_number": "FA305", "date": "2026-09-20", "origin": "LAX", "destination": "ORD",
+      "departure": "2026-09-20T14:00:00Z", "arrival": "2026-09-20T18:10:00Z", "status": "landed",
+      "prices": {"basic_economy": 159, "economy": 240, "business": 760},
+      "seats_available": {"basic_economy": 0, "economy": 0, "business": 0}
+    },
+    {
+      "flight_number": "FA410", "date": "2026-10-20", "origin": "ORD", "destination": "BOS",
+      "departure": "2026-10-20T12:45:00Z", "arrival": "2026-10-20T15:05:00Z", "status": "scheduled",
+      "prices": {"basic_economy": 119, "economy": 180, "business": 540},
+      "seats_available": {"basic_economy": 14, "economy": 28, "business": 2}
+    }
+  ]
+}

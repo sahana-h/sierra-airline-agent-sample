@@ -1,0 +1,18 @@
+# Environment
+.venv/
+.env
+
+# Python build and cache artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Databases saved by the app; the seed lives in src/ and stays tracked
+*.db.json
