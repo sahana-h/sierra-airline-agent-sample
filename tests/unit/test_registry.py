@@ -3,6 +3,7 @@ from collections.abc import Callable
 import pytest
 from pydantic import BaseModel, Field, ValidationError
 
+from airline_agent.agent.session import Session
 from airline_agent.tools.base import Tool, ToolContext, ToolResult, tool
 from airline_agent.tools.registry import Registry
 
@@ -35,7 +36,7 @@ def registry() -> Registry:
 
 def test_discover_finds_tools_in_package() -> None:
     names = Registry.discover().names
-    assert "get_reservation" in names
+    assert {"authenticate_user", "get_reservation"} <= set(names)
     assert "read_seat" not in names  # tools defined outside the package are not picked up
 
 
@@ -73,25 +74,44 @@ def test_tool_exception_becomes_error_result(registry: Registry, make_ctx: MakeC
     assert "internal error" in result.error
 
 
-def test_mutating_tool_refused_without_confirmation(registry: Registry, make_ctx: MakeCtx) -> None:
-    result = registry.call("book_seat", {"seat": "12A"}, make_ctx())
+def test_mutating_tool_is_proposed_not_run(registry: Registry, make_ctx: MakeCtx) -> None:
+    session = Session()
+    result = registry.call("book_seat", {"seat": "12A"}, make_ctx(session=session))
     assert not result.ok
     assert result.error is not None
-    assert "confirmation" in result.error
+    assert "Nothing has been changed" in result.error
+    session.begin_user_turn()
+    assert session.consume_confirmation("book_seat", {"seat": "12A"})
 
 
-def test_mutating_tool_refused_when_confirmed_args_differ(
-    registry: Registry, make_ctx: MakeCtx
-) -> None:
-    ctx = make_ctx(confirmed=[("book_seat", {"seat": "14C"})])
+def test_mutating_tool_refused_in_same_turn(registry: Registry, make_ctx: MakeCtx) -> None:
+    ctx = make_ctx(session=Session())
+    registry.call("book_seat", {"seat": "12A"}, ctx)
     assert not registry.call("book_seat", {"seat": "12A"}, ctx).ok
 
 
-def test_mutating_tool_runs_with_matching_confirmation(
-    registry: Registry, make_ctx: MakeCtx
-) -> None:
-    ctx = make_ctx(confirmed=[("book_seat", {"seat": "12A"})])
-    assert registry.call("book_seat", {"seat": "12A"}, ctx) == ToolResult.success({"booked": "12A"})
+def test_mutating_tool_refused_when_args_change(registry: Registry, make_ctx: MakeCtx) -> None:
+    session = Session()
+    ctx = make_ctx(session=session)
+    registry.call("book_seat", {"seat": "14C"}, ctx)
+    session.begin_user_turn()
+    assert not registry.call("book_seat", {"seat": "12A"}, ctx).ok
+
+
+def test_mutating_tool_runs_after_user_turn(registry: Registry, make_ctx: MakeCtx) -> None:
+    session = Session()
+    ctx = make_ctx(session=session)
+    registry.call("book_seat", {"seat": "12A"}, ctx)
+    session.begin_user_turn()
+    result = registry.call("book_seat", {"seat": "12A"}, ctx)
+    assert result == ToolResult.success({"booked": "12A"})
+
+
+def test_invalid_args_are_not_proposed(registry: Registry, make_ctx: MakeCtx) -> None:
+    session = Session()
+    registry.call("book_seat", {"seat": 12}, make_ctx(session=session))
+    session.begin_user_turn()
+    assert not session.consume_confirmation("book_seat", {"seat": 12})
 
 
 def test_duplicate_tool_names_rejected() -> None:

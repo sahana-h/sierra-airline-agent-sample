@@ -66,12 +66,16 @@ class Registry:
                 f"Invalid arguments for {name}: {_describe(exc)}. Fix them and try again."
             )
 
-        if selected.mutates and not ctx.session.is_confirmed(name, parsed.model_dump(mode="json")):
-            return ToolResult.failure(
-                "This action changes the booking and needs the user's explicit confirmation. "
-                "Tell the user exactly what will change and what it costs, wait for a clear "
-                "yes, then call the tool again with the same arguments."
-            )
+        if selected.mutates:
+            json_args = parsed.model_dump(mode="json")
+            if not ctx.session.consume_confirmation(name, json_args):
+                ctx.session.propose(name, json_args)
+                return ToolResult.failure(
+                    "Nothing has been changed yet: this action needs the user's explicit "
+                    "confirmation. Tell the user exactly what will change and what it costs, "
+                    "and ask them to confirm. If their next message clearly agrees, call this "
+                    "tool again with exactly the same arguments."
+                )
 
         try:
             return selected(parsed, ctx)

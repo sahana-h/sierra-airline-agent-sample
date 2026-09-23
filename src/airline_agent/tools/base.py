@@ -18,15 +18,30 @@ _TOOL_NAME = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 
 class Session(Protocol):
-    """What tools and the registry need from the conversation session."""
+    """What tools and the registry need from the conversation session.
+
+    `args` below are a tool's validated arguments in JSON mode, so the same
+    request always compares equal.
+    """
 
     @property
     def user_id(self) -> str | None:
         """The authenticated user's ID, or None before authentication."""
         ...
 
-    def is_confirmed(self, tool_name: str, args: Mapping[str, Any]) -> bool:
-        """Whether the user explicitly approved this exact call (validated, JSON-mode args)."""
+    @property
+    def failed_auth_attempts(self) -> int: ...
+
+    def authenticate(self, user_id: str) -> None: ...
+
+    def record_failed_auth(self) -> None: ...
+
+    def propose(self, tool_name: str, args: Mapping[str, Any]) -> None:
+        """Record a write the model wants to make, pending the user's confirmation."""
+        ...
+
+    def consume_confirmation(self, tool_name: str, args: Mapping[str, Any]) -> bool:
+        """Use up the user's confirmation for this exact call. True if there was one."""
         ...
 
 

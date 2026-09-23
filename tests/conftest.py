@@ -1,12 +1,11 @@
-"""Shared fixtures: a fresh seed database, a fake session and a fixed clock."""
+"""Shared fixtures: a fresh seed database, a session and a fixed clock."""
 
-from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Any
 
 import pytest
 
+from airline_agent.agent.session import Session
 from airline_agent.data.db import Database
 from airline_agent.tools.base import ToolContext
 
@@ -16,17 +15,6 @@ FIXED_NOW = datetime(2026, 9, 25, 12, 0, tzinfo=UTC)
 MakeCtx = Callable[..., ToolContext]
 
 
-@dataclass
-class FakeSession:
-    """A session with a fixed user and a fixed list of confirmed (tool, args) calls."""
-
-    user_id: str | None = None
-    confirmed: list[tuple[str, dict[str, Any]]] = field(default_factory=list)
-
-    def is_confirmed(self, tool_name: str, args: Mapping[str, Any]) -> bool:
-        return (tool_name, dict(args)) in self.confirmed
-
-
 @pytest.fixture
 def db() -> Database:
     return Database.load()
@@ -34,13 +22,12 @@ def db() -> Database:
 
 @pytest.fixture
 def make_ctx(db: Database) -> MakeCtx:
-    """Build a ToolContext for the given user and confirmations."""
+    """Build a ToolContext, optionally signed in as `user_id` or around a given session."""
 
-    def build(
-        user_id: str | None = None,
-        confirmed: Sequence[tuple[str, dict[str, Any]]] = (),
-    ) -> ToolContext:
-        session = FakeSession(user_id=user_id, confirmed=list(confirmed))
+    def build(user_id: str | None = None, session: Session | None = None) -> ToolContext:
+        session = session or Session()
+        if user_id is not None:
+            session.authenticate(user_id)
         return ToolContext(db=db, session=session, now=FIXED_NOW)
 
     return build
