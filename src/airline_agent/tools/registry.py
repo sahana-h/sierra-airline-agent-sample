@@ -2,6 +2,8 @@
 
 This is the only interface the agent loop uses to reach tools. It guarantees
 that a call never raises: every problem comes back as a failed `ToolResult`.
+It also enforces the rules every tool shares: sign-in for tools that require it,
+and user confirmation for tools that change data.
 """
 
 from __future__ import annotations
@@ -53,11 +55,16 @@ class Registry:
         return [t.schema() for t in self._tools.values()]
 
     def call(self, name: str, args: Mapping[str, Any], ctx: ToolContext) -> ToolResult:
-        """Validate `args`, enforce confirmation for writes, and run the tool."""
+        """Enforce sign-in, validate `args`, enforce confirmation for writes, and run the tool."""
         selected = self._tools.get(name)
         if selected is None:
             available = ", ".join(self._tools)
             return ToolResult.failure(f"Unknown tool {name!r}. Available tools: {available}.")
+
+        if selected.requires_auth and ctx.session.user_id is None:
+            return ToolResult.failure(
+                "The user is not authenticated. Verify their identity before using this tool."
+            )
 
         try:
             parsed = selected.input_model.model_validate(args)

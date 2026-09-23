@@ -42,6 +42,7 @@ class AuthenticateUserInput(BaseModel):
     ),
     input_model=AuthenticateUserInput,
     mutates=False,  # changes the session, not the database
+    requires_auth=False,  # this is how the user signs in
 )
 def authenticate_user(args: AuthenticateUserInput, ctx: ToolContext) -> ToolResult:
     """Sign the user in if their name matches the account found by ID or reservation."""

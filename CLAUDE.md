@@ -75,9 +75,12 @@ def add_checked_bag(args: AddCheckedBagInput, ctx: ToolContext) -> ToolResult:
 - `name`: snake_case verb phrase. `description`: written for the model. Say when to use it and when not to.
 - `input_model`: Pydantic model with field descriptions. This is the single source of truth for the schema.
 - `mutates`: `False` for reads, `True` for writes. The registry refuses to run a mutating tool unless the session has a recorded user confirmation for that exact action.
+- `requires_auth`: defaults to `True`; the registry refuses the call until the user is signed in, and the tool can read `ctx.user_id`. Set `False` only for tools that must work before sign-in (e.g. `authenticate_user`).
 - Return `ToolResult(ok=True, data={...})` or `ToolResult(ok=False, error="...")`.
 
 ### Checklist for adding a tool
+
+Use the `add-tool` skill (and `add-policy-rule` / `write-tests` for rules and tests); it walks through these steps.
 
 1. Create or open a module in `tools/` and define the input model and function with `@tool`.
 2. If there is a new business rule, add a pure function in `policy/rules.py`.

@@ -53,6 +53,20 @@ class ToolContext:
     session: Session
     now: datetime  # injected so time-based policy is deterministic in tests
 
+    @property
+    def user_id(self) -> str:
+        """The signed-in user's ID.
+
+        The registry only runs tools with `requires_auth=True` for a signed-in user,
+        so those tools can rely on this. Tools that opt out must not use it.
+        """
+        user_id = self.session.user_id
+        if user_id is None:
+            raise RuntimeError(
+                "No signed-in user; only tools with requires_auth=True may use this."
+            )
+        return user_id
+
 
 class ToolResult(BaseModel):
     """The outcome of a tool call, sent back to the model as JSON."""
@@ -89,6 +103,7 @@ class Tool(Generic[InputT]):
     input_model: type[InputT]
     mutates: bool
     fn: Callable[[InputT, ToolContext], ToolResult]
+    requires_auth: bool = True
 
     def __post_init__(self) -> None:
         if not _TOOL_NAME.match(self.name):
@@ -112,11 +127,13 @@ def tool(
     description: str,
     input_model: type[InputT],
     mutates: bool,
+    requires_auth: bool = True,
 ) -> Callable[[Callable[[InputT, ToolContext], ToolResult]], Tool[InputT]]:
     """Turn a function into a `Tool` that the registry discovers automatically.
 
     `mutates` has no default on purpose: every tool author must decide whether
-    the tool needs user confirmation.
+    the tool needs user confirmation. `requires_auth` defaults to True so that
+    forgetting it leaves a tool locked, not open.
     """
 
     def decorator(fn: Callable[[InputT, ToolContext], ToolResult]) -> Tool[InputT]:
@@ -126,6 +143,7 @@ def tool(
             input_model=input_model,
             mutates=mutates,
             fn=fn,
+            requires_auth=requires_auth,
         )
 
     return decorator

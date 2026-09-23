@@ -44,9 +44,9 @@ cli.py ──► agent/loop.py ──► tools/registry.py ──► tools/*.py 
 
 - **Policy is enforced in code.** The prompt tells the model what the policy is. The tools make sure it's followed. If the model asks for something the policy forbids, the tool refuses and says why.
 - **Writes require confirmation, enforced in code.** See [Confirmation protocol](#confirmation-protocol).
-- **Sign-in is required and limited.** `authenticate_user` checks the user's name against their user ID or one of their reservation codes. Every mismatch gets the same vague error, and after 3 failed attempts the tool refuses and tells the model to hand off to a human. A conversation serves one customer, so switching to a different account is refused.
+- **Sign-in is required, enforced by the registry.** Every tool requires a signed-in user unless it explicitly opts out with `requires_auth=False` (today only `authenticate_user`). The default is "locked", so forgetting the flag can't open a tool up, and a contract test pins the list of tools that opt out. `authenticate_user` checks the user's name against their user ID or one of their reservation codes. Every mismatch gets the same vague error, and after 3 failed attempts the tool refuses and tells the model to hand off to a human. A conversation serves one customer, so switching to a different account is refused.
 - **Tools never raise to the loop.** Every failure comes back as `ToolResult(ok=False, error=...)` worded so the model can recover or explain. The registry also catches unexpected exceptions as a last line of defense.
-- **Authorization is checked in tools too.** Tools look up the authenticated user from the session. A reservation belonging to someone else is reported as "not found", so the tool doesn't reveal which codes exist.
+- **Ownership is checked in tools.** Only a tool knows what "belongs to this user" means for its data, so tools compare records against `ctx.user_id`. A reservation belonging to someone else is reported as "not found", so the tool doesn't reveal which codes exist.
 - **Time is injected.** `ToolContext.now` means rules like "free cancellation within 24 hours" can be tested with a fixed clock.
 - **The DB hands out copies.** Getters return deep copies, so a tool can't change data by accident. Writes will go through explicit `Database` methods.
 - **Domain model.** The domain loosely follows the τ-bench airline setting: cabins, membership tiers, passengers and mixed payment methods. The seed data is small and hand-written so that each record exercises a policy edge case (basic economy, a gold member, a flight that has already flown, a cancelled booking, a split payment).
@@ -80,6 +80,7 @@ class GetReservationInput(BaseModel):
                 "Do not use it to search for flights ...",
     input_model=GetReservationInput,  # the JSON schema is generated from this
     mutates=False,                     # True → the registry requires user confirmation
+    # requires_auth defaults to True → the registry refuses calls before sign-in
 )
 def get_reservation(args: GetReservationInput, ctx: ToolContext) -> ToolResult:
     ...
@@ -96,8 +97,17 @@ Checklist:
 
 ## Testing
 
-- `make test`: unit tests for the registry, session, policy rules, tools and database. They run offline against `seed.json` with a fixed clock (`2026-09-25T12:00Z`).
+- `make test`: unit tests for the registry, session, policy rules, tools and database, plus contract tests that every tool passes automatically (descriptions, schema, sign-in, junk input). They run offline against `seed.json` with a fixed clock (`2026-09-25T12:00Z`).
 - `make eval` *(coming)*: scripted conversations against the real model. A scenario passes only if the **final database state** matches what's expected and no forbidden change happened.
+
+## Working with Claude Code
+
+The repo ships project skills in `.claude/skills/` that encode the conventions above, so extensions stay consistent:
+
+- **`add-tool`**: adds a tool end to end: input model, policy wiring, database access, tests, prompt and docs.
+- **`add-policy-rule`**: adds a business rule as a pure function, enforces it in every affected tool, and keeps the prompt in sync.
+- **`write-tests`**: the test conventions for each layer, plus a catalog of airline-specific cases (money, time boundaries, confirmation abuse).
+- **`architecture-check`**: a static check of the CLAUDE.md rules plus a review checklist. Run it before committing.
 
 ## Project layout
 

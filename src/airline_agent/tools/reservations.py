@@ -30,15 +30,9 @@ class GetReservationInput(BaseModel):
 )
 def get_reservation(args: GetReservationInput, ctx: ToolContext) -> ToolResult:
     """Return the reservation if it belongs to the authenticated user."""
-    user_id = ctx.session.user_id
-    if user_id is None:
-        return ToolResult.failure(
-            "The user is not authenticated. Verify their identity before looking up reservations."
-        )
-
     reservation = ctx.db.get_reservation(args.reservation_id)
     # Same message for "missing" and "someone else's" so we don't reveal which codes exist.
-    if reservation is None or reservation.user_id != user_id:
+    if reservation is None or reservation.user_id != ctx.user_id:
         return ToolResult.failure(
             f"No reservation {args.reservation_id} was found for this user. "
             "Ask the user to double-check the code."

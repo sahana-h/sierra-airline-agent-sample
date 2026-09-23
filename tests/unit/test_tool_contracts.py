@@ -19,6 +19,9 @@ TOOL_NAMES = sorted(SCHEMAS)
 
 MIN_DESCRIPTION_WORDS = 10
 
+# Tools that run before sign-in. Adding one here is a security decision; review it as one.
+PUBLIC_TOOLS = {"authenticate_user"}
+
 
 def junk_inputs(name: str) -> list[dict[str, Any]]:
     """Inputs a confused model might send: extra keys, wrong types, empty and huge values."""
@@ -83,6 +86,17 @@ def test_missing_required_fields_are_rejected(name: str, make_ctx: MakeCtx) -> N
     assert not result.ok
     assert result.error is not None
     assert "Invalid arguments" in result.error
+
+
+@pytest.mark.parametrize("name", TOOL_NAMES)
+def test_only_public_tools_run_when_signed_out(name: str, make_ctx: MakeCtx) -> None:
+    result = REGISTRY.call(name, {}, make_ctx())
+    refused = result.error is not None and "not authenticated" in result.error
+    assert refused == (name not in PUBLIC_TOOLS)
+
+
+def test_public_tools_exist() -> None:
+    assert set(TOOL_NAMES) >= PUBLIC_TOOLS
 
 
 @pytest.mark.parametrize("signed_in_as", [None, "ava_chen_1042"])

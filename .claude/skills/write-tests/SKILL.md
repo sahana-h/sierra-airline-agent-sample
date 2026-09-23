@@ -51,7 +51,9 @@ Use real objects (real `Session`, real `Database`, real `Registry`). Fakes are o
 
 ## Minimum coverage by kind of change
 
+"Not signed in" is enforced by the registry and covered for every tool by the contract tests, so tool tests don't repeat it. Use `make_ctx(user_id=...)` when calling a tool function directly.
+
 - **Policy rule**: every branch, every boundary (at, just before, just after), every enum value that matters (cabin × tier tables).
-- **Read tool**: success; not authenticated; missing record; another user's record (same message as missing); input normalization.
+- **Read tool**: success; missing record; another user's record (same message as missing); input normalization.
 - **Write tool**: everything for a read tool, plus each policy refusal with its reason; DB unchanged on every failure; exact DB change on success; confirmation flow through the registry; changed arguments after proposal are refused; can't be applied twice.
 - **Bug fix**: a regression test named after the bug's behavior, written before the fix.

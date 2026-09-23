@@ -26,7 +26,7 @@ def test_normalizes_reservation_code(make_ctx: MakeCtx) -> None:
 
 
 def test_refuses_when_not_authenticated(make_ctx: MakeCtx) -> None:
-    result = get_reservation(GetReservationInput(reservation_id="ZQ4K2P"), make_ctx())
+    result = Registry.discover().call("get_reservation", {"reservation_id": "ZQ4K2P"}, make_ctx())
     assert not result.ok
     assert result.error is not None
     assert "not authenticated" in result.error

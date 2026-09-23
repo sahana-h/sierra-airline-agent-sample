@@ -24,12 +24,13 @@ Categories of tests that matter for this domain. Pick every one that applies to 
 - the input schema is a JSON object schema that serializes cleanly
 - junk input returns a `ToolResult` (never raises) and leaves the DB unchanged
 - missing required fields are rejected
+- only tools in `PUBLIC_TOOLS` run before sign-in
 
 If a new tool legitimately breaks one of these, fix the tool, not the contract test.
 
 ## 2. Authorization
 
-- Not signed in → refused, for every tool except `authenticate_user`.
+- Not signed in → refused by the registry for every tool not in `PUBLIC_TOOLS`. The contract tests cover this automatically; a new public tool must be added to `PUBLIC_TOOLS` deliberately.
 - Another user's reservation → the *same* message as a code that doesn't exist (no probing which codes exist). Seed: `M8TRW3` belongs to Marcus; test as Ava.
 - A signed-in user can't switch accounts mid-conversation.
 - Sign-in lockout after `MAX_FAILED_AUTH_ATTEMPTS`, even with correct details afterward.
